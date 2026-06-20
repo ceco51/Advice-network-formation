@@ -190,12 +190,12 @@ run_simulation <- function(
 # Main execution script
 main <- function() {
   # Uploading the file from Lazega (from hardcoded path)
-  adv_data <- read.table("/home/users/francesco.renzini/NETSIM/AutoAdvice/ELadv.dat", 
+  adv_data <- read.table("/home/users/NETSIM/AutoAdvice/ELadv.dat", 
                          header = FALSE)
   colnames(adv_data) <- as.character(c(1:ncol(adv_data)))
   adv_data <- as.matrix(adv_data)
   
-  adv_att <- read.table("/home/users/francesco.renzini/NETSIM/AutoAdvice/ELattr.dat",
+  adv_att <- read.table("/home/users/NETSIM/AutoAdvice/ELattr.dat",
                         header = FALSE)
   colnames(adv_att) <- c("senority", "status", "gender", "office", 
                          "years with the firm", "age", "practice", "law school")
@@ -363,10 +363,8 @@ main <- function() {
   metrics_summary <- merge(metrics_mean, metrics_sd, 
                            by = c("iteration", "p", "q", "r", "sigma_zero", "sigma_T1", "sigma_T2", "sigma_T3"))
   # Save results
-  #write_xlsx(metrics_all, 
-             #"C:\\Users\\Francesco\\Desktop\\AutoregressiveAdvice\\metrics_all_parallel.xlsx")
   write_xlsx(metrics_summary, 
-             "/home/users/francesco.renzini/NETSIM/AutoAdvice/metrics_summary_parallel_new_zeta.xlsx")
+             "/home/users/NETSIM/AutoAdvice/metrics_summary_parallel_new_zeta.xlsx")
   
   cat("Simulations complete! Results saved to Excel files.\n")
   return(metrics_summary)
