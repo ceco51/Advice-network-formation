@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Advice network logistic simulator</title></head>
+<body>
+
+<h2 class="sr-only">Advice network logistic simulator</h2>
+
+<style>
+.ctrl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1rem; }
+.ctrl-block { display: flex; flex-direction: column; gap: 6px; }
+.ctrl-block label { font-size: 12px; color: var(--color-text-secondary, #5f5e5a); }
+.ctrl-block select { font-size: 13px; }
+.stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin-top: 1rem; }
+.stat-card { background: #f1efe8; border-radius: 8px; padding: 10px; }
+.stat-card .slabel { font-size: 11px; color: #5f5e5a; margin: 0 0 2px; }
+.stat-card .sval { font-size: 20px; font-weight: 500; margin: 0; color: #2c2c2a; }
+.param-tag { display: inline-block; font-size: 11px; background: #f1efe8; border: 0.5px solid #d3d1c7; border-radius: 8px; padding: 3px 8px; color: #5f5e5a; margin-bottom: 8px; }
+</style>
+
+<p style="font-size: 16px; font-weight: 500; margin: 1rem 0 1.2rem;">Advice network logistic simulator</p>
+
+<div style="display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.8fr); gap: 28px;">
+
+  <div>
+    <div class="ctrl-grid">
+      <div class="ctrl-block">
+        <label>σ₀</label>
+        <select id="s0">
+          <option value="-1.5">-1.5</option>
+          <option value="-1.0">-1.0</option>
+          <option value="-0.5" selected>-0.5</option>
+          <option value="-0.3">-0.3</option>
+          <option value="-0.1">-0.1</option>
+        </select>
+      </div>
+      <div class="ctrl-block">
+        <label>σ₃</label>
+        <select id="s3">
+          <option value="-1.5">-1.5</option>
+          <option value="-1.0">-1.0</option>
+          <option value="-0.5" selected>-0.5</option>
+          <option value="-0.3">-0.3</option>
+          <option value="-0.1">-0.1</option>
+        </select>
+      </div>
+      <div class="ctrl-block">
+        <label>σ₁</label>
+        <select id="s1">
+          <option value="0.5">0.5</option>
+          <option value="1.0">1.0</option>
+          <option value="1.5">1.5</option>
+          <option value="2.0">2.0</option>
+          <option value="2.5" selected>2.5</option>
+        </select>
+      </div>
+      <div class="ctrl-block">
+        <label>σ₂</label>
+        <select id="s2">
+          <option value="0.5">0.5</option>
+          <option value="1.0">1.0</option>
+          <option value="1.5" selected>1.5</option>
+          <option value="2.0">2.0</option>
+          <option value="2.5">2.5</option>
+        </select>
+      </div>
+      <div class="ctrl-block">
+        <label>q</label>
+        <select id="qq">
+          <option value="0.05">0.05</option>
+          <option value="0.1">0.1</option>
+          <option value="0.2">0.2</option>
+          <option value="0.3">0.3</option>
+          <option value="0.4">0.4</option>
+          <option value="0.5">0.5</option>
+          <option value="0.6">0.6</option>
+          <option value="0.7">0.7</option>
+          <option value="0.8">0.8</option>
+          <option value="0.9">0.9</option>
+          <option value="0.95" selected>0.95</option>
+        </select>
+      </div>
+      <div class="ctrl-block">
+        <label>r</label>
+        <select id="rr">
+          <option value="0.2" selected>0.2</option>
+          <option value="0.8">0.8</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="background: #f1efe8; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 12px; color: #5f5e5a;">
+      Fixed: n = 71, T = 1,000
+    </div>
+
+    <button onclick="runSim()" style="width:100%; padding: 8px 0; font-size: 13px;">Run simulation</button>
+    <p id="status" style="font-size: 11px; color: #888780; margin-top: 6px; min-height: 14px;"></p>
+
+    <div class="stat-grid">
+      <div class="stat-card"><p class="slabel">mean P</p><p class="sval" id="stat-meanp">—</p></div>
+      <div class="stat-card"><p class="slabel">% |z| &gt; 4</p><p class="sval" id="stat-flatpct">—</p></div>
+      <div class="stat-card"><p class="slabel">mean |z|</p><p class="sval" id="stat-meanz">—</p></div>
+    </div>
+  </div>
+
+  <div>
+    <span class="param-tag" id="param-tag">σ₀=-0.5, σ₁=2.5, σ₂=1.5, σ₃=-0.5 | q=0.95, p=1.053, r=0.2</span>
+
+    <p style="font-size: 12px; color: #5f5e5a; margin: 0 0 4px;">Distribution of tie-formation probabilities P</p>
+    <div style="position: relative; width: 100%; height: 200px;">
+      <canvas id="histChart" role="img" aria-label="Histogram of tie-formation probabilities">Distribution of P values.</canvas>
+    </div>
+
+    <p style="font-size: 12px; color: #5f5e5a; margin: 12px 0 2px;">Logistic argument z — coral bars: |z| &gt; 4</p>
+    <div style="position: relative; width: 100%; height: 200px;">
+      <canvas id="zChart" role="img" aria-label="Histogram of logistic argument z">Distribution of z values.</canvas>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const N = 71, T = 1000;
+function gv(id) { return parseFloat(document.getElementById(id).value); }
+let histInst = null, zInst = null;
+
+function makeHist(data, bins, mn, mx) {
+  const w = (mx - mn) / bins;
+  const counts = new Array(bins).fill(0);
+  data.forEach(v => {
+    let b = Math.floor((v - mn) / w);
+    b = Math.max(0, Math.min(bins - 1, b));
+    counts[b]++;
+  });
+  const total = data.length;
+  return {
+    labels: counts.map((_, i) => (mn + (i + 0.5) * w).toFixed(2)),
+    pct: counts.map(c => parseFloat((c / total * 100).toFixed(2)))
+  };
+}
+
+function runSim() {
+  const s0 = gv('s0'), s1 = gv('s1'), s2 = gv('s2'), s3 = gv('s3');
+  const q = gv('qq'), p = 1 / q, r = gv('rr');
+
+  document.getElementById('param-tag').textContent =
+    `σ₀=${s0}, σ₁=${s1}, σ₂=${s2}, σ₃=${s3} | q=${q}, p=${p.toFixed(3)}, r=${r}`;
+  document.getElementById('status').textContent = 'Running…';
+
+  setTimeout(() => {
+    let alpha = Array.from({length: N}, () => Math.random());
+    let beta  = Array.from({length: N}, () => Math.random());
+    const ages    = Array.from({length: N}, () => Math.floor(Math.random() * 3));
+    const genders = Array.from({length: N}, () => Math.floor(Math.random() * 2));
+    const offices = Array.from({length: N}, () => Math.floor(Math.random() * 3));
+    const adj = Array.from({length: N}, () => new Array(N).fill(0));
+    const allP = [], allZ = [];
+
+    for (let iter = 0; iter < T; iter++) {
+      const j = Math.floor(Math.random() * N);
+      const pVec = new Array(N).fill(0);
+      for (let k = 0; k < N; k++) {
+        if (k === j) continue;
+        const ad = alpha[k] - alpha[j];
+        const bd = beta[k]  - beta[j];
+        const hd = Math.sqrt(
+          (ages[k]    !== ages[j]    ? 1 : 0) +
+          (genders[k] !== genders[j] ? 1 : 0) +
+          (offices[k] !== offices[j] ? 1 : 0)
+        );
+        const z = s0 + s1 * ad + s2 * bd + s3 * hd;
+        const pv = 1 / (1 + Math.exp(-z));
+        pVec[k] = pv; allZ.push(z); allP.push(pv);
+      }
+
+      const outDeg = new Array(N).fill(0), inDeg = new Array(N).fill(0);
+      for (let a = 0; a < N; a++) for (let b2 = 0; b2 < N; b2++) if (adj[a][b2]) { outDeg[a]++; inDeg[b2]++; }
+      const outNorm = outDeg.map(d => d / (N-1)), inNorm = inDeg.map(d => d / (N-1));
+
+      for (let k = 0; k < N; k++) {
+        if (k === j) continue;
+        if (!adj[j][k] && pVec[k] >= 0.5) adj[j][k] = 1;
+        else if (adj[j][k] && pVec[k] < 0.5) adj[j][k] = 0;
+      }
+
+      alpha = alpha.map((a,i) => Math.min(1, Math.max(0,
+        a - outNorm[i]*Math.pow(Math.max(a,1e-9),p) + inNorm[i]*Math.pow(Math.max(a,1e-9),q))));
+      beta = beta.map((b2,i) => Math.min(1, Math.max(0,
+        b2 + outNorm[i]*Math.pow(Math.max(b2,1e-9),r))));
+    }
+
+    document.getElementById('stat-meanp').textContent = (allP.reduce((a,b)=>a+b,0)/allP.length).toFixed(3);
+    document.getElementById('stat-flatpct').textContent = (allZ.filter(z=>Math.abs(z)>4).length/allZ.length*100).toFixed(1)+'%';
+    document.getElementById('stat-meanz').textContent = (allZ.reduce((a,b)=>a+Math.abs(b),0)/allZ.length).toFixed(2);
+
+    const hP = makeHist(allP, 20, 0, 1);
+    const tealFill = 'rgba(29,158,117,0.72)', coralFill = 'rgba(216,90,48,0.75)';
+    const hZ = makeHist(allZ, 40, -10, 10);
+    const zColors = hZ.labels.map(l => Math.abs(parseFloat(l)) > 4 ? coralFill : tealFill);
+    const baseOpts = (xLabel) => ({
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { title: { display: true, text: xLabel, font: {size:11} }, ticks: { maxTicksLimit:7, font:{size:10} } },
+        y: { title: { display: true, text: '%', font: {size:11} }, ticks: { font:{size:10} } }
+      }
+    });
+
+    if (histInst) histInst.destroy();
+    histInst = new Chart(document.getElementById('histChart'), {
+      type: 'bar',
+      data: { labels: hP.labels, datasets: [{ data: hP.pct, backgroundColor: tealFill, borderWidth: 0 }] },
+      options: baseOpts('P(tie)')
+    });
+
+    if (zInst) zInst.destroy();
+    zInst = new Chart(document.getElementById('zChart'), {
+      type: 'bar',
+      data: { labels: hZ.labels, datasets: [{ data: hZ.pct, backgroundColor: zColors, borderWidth: 0 }] },
+      options: baseOpts('z')
+    });
+
+    document.getElementById('status').textContent =
+      `Done — ${allP.length.toLocaleString()} P values across ${T} iterations.`;
+  }, 10);
+}
+
+runSim();
+</script>
+</body>
+</html>
